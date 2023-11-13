@@ -1,0 +1,6 @@
+application {
+    config {
+        baseName prodesign
+    }
+    entities *
+}

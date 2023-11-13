@@ -1,0 +1,9 @@
+{
+  "prodesignApp": {
+    "LogType": {
+      "null": "",
+      "LOGIN": "LOGIN",
+      "OPERATE": "OPERATE"
+    }
+  }
+}

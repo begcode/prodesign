@@ -1,0 +1,154 @@
+<template>
+  <plugin-panel :title="title" @close="pluginPanelClosed">
+    <template #header>
+      <svg-button class="add-folder-icon" name="add-folder|svg" placement="bottom" tips="新建文件夹" @click="createNewFolder"></svg-button>
+      <svg-button
+        class="new-page-icon"
+        name="new-page|svg"
+        placement="bottom"
+        tips="新建页面"
+        @click="createNewPage('staticPages')"
+      ></svg-button>
+    </template>
+
+    <template #content>
+      <page-tree
+        ref="pageTreeRef"
+        :isFolder="state.isFolder"
+        @add="createNewPage('publicPages')"
+        @openSettingPanel="openSettingPanel"
+      ></page-tree>
+    </template>
+  </plugin-panel>
+
+  <page-setting :isFolder="state.isFolder" @openNewPage="openNewPage"></page-setting>
+
+  <page-folder-setting :isFolder="state.isFolder"></page-folder-setting>
+</template>
+
+<script lang="jsx">
+import { reactive, ref, watchEffect } from 'vue';
+import { useCanvas, useApp, useResource, usePage } from '@/controller';
+import { PluginPanel, SvgButton } from '@/common';
+import { extend } from '@opentiny/vue-renderless/common/object';
+import PageSetting, { openPageSettingPanel, closePageSettingPanel } from './PageSetting.vue';
+import PageFolderSetting, { openFolderSettingPanel, closeFolderSettingPanel } from './PageFolderSetting.vue';
+import PageTree from './PageTree.vue';
+import { fetchPageDetail } from './http';
+
+export const api = {
+  getPageById: async id => {
+    if (id) {
+      return fetchPageDetail(id);
+    }
+
+    return undefined;
+  },
+  openPageSettingPanel,
+};
+
+export default {
+  components: {
+    PageSetting,
+    PluginPanel,
+    SvgButton,
+    PageFolderSetting,
+    PageTree,
+  },
+  props: {
+    title: {
+      type: String,
+      default: '页面管理',
+    },
+    fixedPanels: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  emits: ['fixed-panels', 'close', 'fixPanel'],
+  setup() {
+    const { appInfoState } = useApp();
+    const { pageState } = useCanvas();
+    const { pageSettingState, DEFAULT_PAGE, isTemporaryPage, initCurrentPageData } = usePage();
+    const { resState } = useResource();
+    const pageTreeRef = ref(null);
+    const ROOT_ID = pageSettingState.ROOT_ID;
+
+    const state = reactive({
+      isFolder: false,
+    });
+
+    const createNewPage = group => {
+      closeFolderSettingPanel();
+      pageSettingState.isNew = true;
+      pageSettingState.currentPageData = {
+        ...DEFAULT_PAGE,
+        parentId: ROOT_ID,
+        route: '',
+        name: 'Untitled',
+        page_content: {
+          lifeCycles: {},
+        },
+        group,
+      };
+      pageSettingState.currentPageDataCopy = extend(true, {}, pageSettingState.currentPageData);
+      state.isFolder = false;
+      openPageSettingPanel();
+    };
+
+    const createNewFolder = () => {
+      closePageSettingPanel();
+      pageSettingState.isNew = true;
+      pageSettingState.currentPageData = { parentId: ROOT_ID, route: '', name: 'untitled' };
+      pageSettingState.currentPageDataCopy = extend(true, {}, pageSettingState.currentPageData);
+      state.isFolder = true;
+      openFolderSettingPanel();
+    };
+
+    watchEffect(() => {
+      if (isTemporaryPage.saved) {
+        openPageSettingPanel();
+      }
+    });
+
+    const openSettingPanel = async nodeData => {
+      state.isFolder = !nodeData.isPage;
+      pageSettingState.isNew = false;
+
+      const isPageChange = nodeData.id !== pageSettingState.currentPageData.id;
+
+      if (state.isFolder) {
+        isPageChange && closePageSettingPanel();
+        openFolderSettingPanel();
+      } else {
+        isPageChange && closeFolderSettingPanel();
+        openPageSettingPanel();
+      }
+      const pageDetail = await fetchPageDetail(nodeData?.id);
+      initCurrentPageData(pageDetail);
+    };
+
+    const pluginPanelClosed = () => {
+      closePageSettingPanel();
+      closeFolderSettingPanel();
+    };
+
+    const openNewPage = data => {
+      pageTreeRef.value.switchPage(data);
+    };
+
+    return {
+      state,
+      resState,
+      appInfoState,
+      pageState,
+      openNewPage,
+      pageTreeRef,
+      pluginPanelClosed,
+      openSettingPanel,
+      createNewFolder,
+      createNewPage,
+    };
+  },
+};
+</script>

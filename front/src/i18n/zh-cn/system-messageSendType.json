@@ -1,0 +1,10 @@
+{
+  "prodesignApp": {
+    "MessageSendType": {
+      "null": "",
+      "EMAIL": "EMAIL",
+      "SMS": "SMS",
+      "WECHAT": "WECHAT"
+    }
+  }
+}

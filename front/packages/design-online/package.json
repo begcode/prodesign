@@ -1,0 +1,83 @@
+{
+  "name": "@begcode/design-online",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Design Online",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 vite build && esno ./build/script/postBuild.ts",
+    "build:analyze": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --mode analyze",
+    "clean-www": "rimraf target/classes/static/app/{src,target/}",
+    "cleanup": "rimraf target/classes/static/",
+    "gen:icon": "esno ./build/generate/icon/index.ts",
+    "jest": "jest --coverage --logHeapUsage --maxWorkers=2 --no-cache --config jest.conf.js",
+    "jest:update": "npm run jest -- --updateSnapshot",
+    "lint": "vue-cli-service lint --no-fix",
+    "lint:fix": "vue-cli-service lint",
+    "prettier:check": "prettier --check \"{,src/**/,webpack/}*.{md,json,yml,html,cjs,mjs,js,ts,tsx,css,scss,vue,java}\"",
+    "prettier:format": "prettier --write \"{,src/**/,webpack/}*.{md,json,yml,html,cjs,mjs,js,ts,tsx,css,scss,vue,java}\"",
+    "serve": "npm run start",
+    "start": "vite",
+    "start-tls": "npm run webapp:dev -- --env.tls",
+    "pretest": "npm run lint",
+    "test": "npm run jest",
+    "test-ci": "npm run lint && npm run jest:update",
+    "test:watch": "npm run jest -- --watch",
+    "webapp:build": "npm run clean-www && npm run webapp:build:dev",
+    "webapp:build:dev": "npm run webpack -- --config webpack/webpack.dev.js --progress=profile --env stats=minimal",
+    "webapp:build:prod": "npm run webpack -- --config webpack/webpack.prod.js --progress=profile --env stats=minimal",
+    "webapp:dev": "npm run webpack-dev-server -- --config webpack/webpack.dev.js --progress=profile --inline --env stats=normal",
+    "webapp:prod": "npm run clean-www && npm run webapp:build:prod",
+    "webapp:test": "npm run test",
+    "webpack": "node --max_old_space_size=4096 node_modules/webpack/bin/webpack.js",
+    "webpack-dev-server": "webpack serve"
+  },
+  "config": {
+    "default_environment": "prod"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "dependencies": {
+    "@begcode/components": "workspace:*",
+    "@vue/repl": "1.5.0",
+    "codemirror": "5.53.2",
+    "dagre": "0.4.5",
+    "html2canvas": "^1.4.1",
+    "monaco-editor": "0.33.0",
+    "pinyin-pro": "^3.13.0",
+    "prettier": "3.0.2",
+    "vue-clipboard3": "^2.0.0",
+    "vue-draggable-next": "2.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.18.13",
+    "@babel/generator": "7.18.13",
+    "@babel/parser": "7.18.13",
+    "@babel/traverse": "7.18.13",
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "@opentiny/vue-icon": "~3.10.0",
+    "@opentiny/vue-renderless": "~3.10.0",
+    "@vue/babel-plugin-jsx": "1.1.1",
+    "axios-mock-adapter": "^1.21.5",
+    "css-tree": "^2.3.1",
+    "dagre": "0.4.5",
+    "generator-jhipster": "8.0.0-rc.1",
+    "nomnoml": "1.6.2",
+    "rollup-plugin-polyfill-node": "^0.12.0",
+    "vite-plugin-monaco-editor": "^1.0.10"
+  },
+  "engines": {
+    "node": ">=18.18.1"
+  },
+  "cacheDirectories": [
+    "node_modules"
+  ],
+  "jestSonar": {
+    "reportPath": "target/test-results/jest",
+    "reportFile": "TESTS-results-sonar.xml"
+  }
+}
